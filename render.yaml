@@ -1,0 +1,43 @@
+services:
+  - type: web
+    name: chipversity-dispatcher
+    runtime: docker
+    rootDir: dispatcher
+    dockerfilePath: ./Dockerfile
+    plan: free
+    region: oregon
+    healthCheckPath: /dispatcher/health
+    autoDeploy: false
+    envVars:
+      # Required: comma-separated worker origins. Reordering is safe because
+      # tags are derived from each URL; see WORKER_TAGS below.
+      # Example: https://chipversity-worker-1.onrender.com,https://...
+      - key: WORKER_URLS
+        sync: false
+      # Shared secret sent to every worker as X-Dispatcher-Token. It must
+      # exactly match DISPATCHER_AUTH_TOKEN on all eight worker services.
+      # Generate once with: openssl rand -hex 32
+      - key: WORKER_AUTH_TOKEN
+        sync: false
+      # Optional. Defaults are derived from each worker URL, so they stay
+      # stable across reordering. Set explicit tags only to keep a worker's
+      # identity when its URL changes (for example, after recreating a
+      # service); existing links still require the worker's files to exist.
+      - key: WORKER_TAGS
+        sync: false
+      - key: ENABLE_DEV_AUDIT
+        value: "false"
+      - key: MAX_COLD_WORKERS
+        value: "2"
+      - key: QUEUE_TIMEOUT_SECONDS
+        value: "60"
+      - key: COLD_START_BUDGET_SECONDS
+        value: "90"
+      - key: CATALOG_TTL_SECONDS
+        value: "1800"
+      - key: IDEMPOTENCY_TTL_SECONDS
+        value: "900"
+      - key: RUN_RATE_LIMIT_PER_MINUTE
+        value: "10"
+      - key: ADVANCED_RATE_LIMIT_PER_MINUTE
+        value: "20"
